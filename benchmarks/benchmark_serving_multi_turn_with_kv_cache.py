@@ -603,10 +603,6 @@ async def poisson_sleep(request_rate: float, verbose: bool = False) -> None:
     await asyncio.sleep(interval)
 
 
-def count_user_messages(messages: list[dict[str, str]]) -> int:
-    """Count the number of user messages in a conversation."""
-    return sum(1 for msg in messages if msg.get('role') == 'user')
-
 async def client_main(
     args: ClientArgs,
     req_args: RequestArgs,
@@ -643,7 +639,7 @@ async def client_main(
     async with aiohttp.ClientSession() as session:
         # Print progress
 
-        while task_queue_empty is False or len(active_convs) > 0:
+        while task_queue_empty is False:
             result = None
 
             if (
@@ -671,8 +667,6 @@ async def client_main(
                 conv_id, messages = task_queue.get()
 
                 if conv_id is TERM_SIGNAL:
-                    # Put the TERM_SIGNAL back for other clients
-                    task_queue.put((TERM_SIGNAL, TERM_SIGNAL))
                     task_queue_empty = True
                     break
 
@@ -683,8 +677,7 @@ async def client_main(
                     # was never inserted/updated in turns_count.
                     turns_count[conv_id] += 2
 
-                completed_turns = turns_count[conv_id] // 2
-                if completed_turns < count_user_messages(messages):
+                if turns_count[conv_id] < len(messages):
                     # Add new conversation
                     active_convs[conv_id] = messages
                     conv_id_queue.append(conv_id)
@@ -700,94 +693,29 @@ async def client_main(
                         f"{Color.YELLOW}Client {client_id} will not use conversation ID {conv_id} (all {len(messages)} messages already sent){Color.RESET}"  # noqa: E501
                     )
 
-            # Check if any active conversations have remaining turns
-            has_remaining_work = False
-            for conv_id, messages in active_convs.items():
-                max_turns = count_user_messages(messages)
-                if args.max_turns is not None:
-                    max_turns = min(args.max_turns, max_turns)
-                # turns_count is incremented twice per turn, so divide by 2 to get actual turns
-                completed_turns = turns_count[conv_id] // 2
-                if completed_turns < max_turns:
-                    has_remaining_work = True
-                    break
-            
-            if len(active_convs) == 0 or not has_remaining_work:
+            if len(active_convs) == 0 or task_queue_empty:
                 logger.info(
                     f"{Color.YELLOW}Client {client_id} has no more work{Color.RESET}"
                 )
-                logger.info(
-                    f"{Color.YELLOW}Active conversations: {len(active_convs)}, has_remaining_work: {has_remaining_work}{Color.RESET}"
-                )
-                for conv_id in active_convs:
-                    completed_turns = turns_count.get(conv_id, 0) // 2
-                    logger.info(
-                        f"{Color.YELLOW}  {conv_id}: turns_count={turns_count.get(conv_id, 0)}, completed_turns={completed_turns}, user_messages={count_user_messages(active_convs[conv_id])}{Color.RESET}"
-                    )
                 break
 
-            # Pick an active conversation for the next request that has remaining turns
+            # Pick an active conversation for the next request
             if args.conversation_sampling == ConversationSampling.ROUND_ROBIN:
-                # Find the next conversation in the queue that has remaining turns
-                conv_id = None
-                while len(conv_id_queue) > 0:
-                    candidate_id = conv_id_queue.pop()
-                    max_turns = count_user_messages(active_convs[candidate_id])
-                    if args.max_turns is not None:
-                        max_turns = min(args.max_turns, max_turns)
-                    completed_turns = turns_count[candidate_id] // 2
-                    if completed_turns < max_turns:
-                        conv_id = candidate_id
-                        break
-                    # If this conversation is finished, remove it from active conversations
-                    conv_queue.put((candidate_id, active_convs.pop(candidate_id)))
-                    if args.verbose:
-                        logger.info(
-                            f"{Color.GREEN}Client {client_id} finished "
-                            f"conversation ID {candidate_id}{Color.RESET}"
-                        )
-                
-                # If no conversation found in queue, check all active conversations
-                if conv_id is None:
-                    for candidate_id, messages in active_convs.items():
-                        max_turns = len(messages)
-                        if args.max_turns is not None:
-                            max_turns = min(args.max_turns, max_turns)
-                        if turns_count[candidate_id] < max_turns:
-                            conv_id = candidate_id
-                            break
+                conv_id = conv_id_queue.pop()
             else:
-                # ConversationSampling.RANDOM - pick from conversations with remaining turns
-                eligible_ids = []
-                for candidate_id, messages in active_convs.items():
-                    max_turns = len(messages)
-                    if args.max_turns is not None:
-                        max_turns = min(args.max_turns, max_turns)
-                    if turns_count[candidate_id] < max_turns:
-                        eligible_ids.append(candidate_id)
-                
-                if eligible_ids:
-                    conv_id = random.choice(eligible_ids)
-                else:
-                    conv_id = None
-
-            # If no conversation with remaining turns found, we're done
-            if conv_id is None:
-                continue
+                # ConversationSampling.RANDOM
+                active_ids = list(active_convs.keys())
+                conv_id = random.choice(active_ids)
 
             messages = active_convs[conv_id]
             assert isinstance(messages, list) and len(messages) > 0
 
-            # Calculate the message index based on turns completed
-            # Each turn consists of sending a user message and receiving an assistant response
-            # turns_count is incremented twice per turn (once for request, once for response)
-            # So the actual turn number is turns_count // 2
-            turn_number = turns_count[conv_id] // 2
-            # The message index for the next user message is turn_number * 2
-            message_index = turn_number * 2
+            # Update the amount of messages to use
+            turns_count[conv_id] += 1
+            current_turn = turns_count[conv_id]
 
-            assert message_index < len(messages), (
-                f"Message index {message_index} is invalid for conversation ID {conv_id}"
+            assert current_turn < len(messages), (
+                f"Turn number {current_turn} is invalid for conversation ID {conv_id}"
                 f" that has only {len(messages)} messages"
             )
 
@@ -799,7 +727,7 @@ async def client_main(
                         curr_time_sec - time_of_last_turn[conv_id], 3
                     )
                 logger.info(
-                    f"Client {client_id} using conversation ID {conv_id} (turn: {turn_number}, message_index: {message_index}, time since last turn [sec]: {time_since_last_turn})"  # noqa: E501
+                    f"Client {client_id} using conversation ID {conv_id} (turn: {current_turn}, time since last turn [sec]: {time_since_last_turn})"  # noqa: E501
                 )
                 time_of_last_turn[conv_id] = curr_time_sec
 
@@ -810,7 +738,7 @@ async def client_main(
                     client_id,
                     conv_id,
                     messages,
-                    message_index + 1,  # send_turn expects number of messages to include
+                    current_turn,
                     tokenizer,
                     req_args,
                     args.print_content,
@@ -853,13 +781,12 @@ async def client_main(
                 # The LLM response will be used as context for the next user turn
                 turns_count[conv_id] += 1
 
-                max_turns = count_user_messages(messages)
+                max_turns = len(messages)
                 if args.max_turns is not None:
                     # Limit the number of turns in the conversation
                     max_turns = min(args.max_turns, max_turns)
 
-                completed_turns = turns_count[conv_id] // 2
-                if completed_turns >= max_turns:
+                if turns_count[conv_id] >= max_turns:
                     # Conversation has no more turns (no longer active)
                     # save the updated conversation (with the LLM server's answer)
                     conv_queue.put((conv_id, active_convs.pop(conv_id)))
@@ -868,30 +795,6 @@ async def client_main(
                             f"{Color.GREEN}Client {client_id} finished "
                             f"conversation ID {conv_id}{Color.RESET}"
                         )
-                    
-                    # Try to get a new conversation from the task queue to replace the finished one
-                    if not task_queue_empty and len(active_convs) < args.max_active_conversations:
-                        try:
-                            new_conv_id, new_messages = task_queue.get_nowait()
-                            if new_conv_id is not TERM_SIGNAL:
-                                if args.skip_first_turn:
-                                    turns_count[new_conv_id] += 2
-                                
-                                completed_turns = turns_count[new_conv_id] // 2
-                                if completed_turns < count_user_messages(new_messages):
-                                    active_convs[new_conv_id] = new_messages
-                                    conv_id_queue.appendleft(new_conv_id)
-                                    if args.verbose:
-                                        logger.info(
-                                            f"{Color.GREEN}Client {client_id} added new conversation ID {new_conv_id} (active conversations {len(active_convs)}){Color.RESET}"
-                                        )
-                            else:
-                                # Put the TERM_SIGNAL back for other clients
-                                task_queue.put((TERM_SIGNAL, TERM_SIGNAL))
-                                task_queue_empty = True
-                        except:
-                            # Task queue is empty
-                            pass
                 else:
                     # Conversation is not finished, insert it at the back of the queue
                     conv_id_queue.appendleft(conv_id)
@@ -1061,8 +964,7 @@ async def main_mp(
     for conv_id, messages in input_conv.items():
         task_queue.put((conv_id, messages))
 
-    # Send TERM_SIGNAL immediately after all conversations are queued
-    # Clients will process all conversations and then encounter the TERM_SIGNAL
+    # Add termination signals for clients
     for _ in range(bench_args.num_clients):
         task_queue.put((TERM_SIGNAL, TERM_SIGNAL))
 
@@ -1101,8 +1003,6 @@ async def main_mp(
 
             finished_convs = len(output_conv)
             percent = finished_convs / total_convs
-
-            # No need to send TERM_SIGNAL here since it's already sent at the beginning
 
             # Tuned to control the print rate (can be changed if required)
             print_cycle = max(3, int(bench_args.num_clients / 4))
@@ -1655,8 +1555,8 @@ async def main() -> None:
         # (when using python multiprocessing and tokenizers)
         os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
-        # Generate synthetic conversations with seed for consistency
-        conversations = generate_conversations(gen_conv_args, tokenizer, args.seed)
+        # Generate synthetic conversations
+        conversations = generate_conversations(gen_conv_args, tokenizer)
 
     else:
         raise Exception(f"Input file {args.input_file} is invalid")

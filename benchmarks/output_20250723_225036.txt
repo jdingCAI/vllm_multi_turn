@@ -1,0 +1,287 @@
+23-07-2025 21:38:21 [INFO] - Color.CYANEstimated req/sec 1.413, estimated runtime left 376.149 secColor.RESET
+23-07-2025 21:38:21 [INFO] - --------------------------------------------------
+23-07-2025 21:38:21 [INFO] - [moving_avg_ttft_ms       ] avg:     45.641 (30 samples)
+23-07-2025 21:38:21 [INFO] - [moving_avg_tpot_ms       ] avg:     13.060 (30 samples)
+23-07-2025 21:38:21 [INFO] - [ttft_ms                  ] avg:     39.898, min:     23.379, max:     61.766
+23-07-2025 21:38:21 [INFO] - [tpot_ms                  ] avg:     12.925, min:     12.530, max:     13.693
+23-07-2025 21:38:21 [INFO] - [latency_ms               ] avg:   1314.627, min:   1024.875, max:   1656.600
+23-07-2025 21:38:21 [INFO] - [input_num_turns          ] avg:      6.918, min:      1.000, max:     17.000
+23-07-2025 21:38:21 [INFO] - [input_num_tokens         ] avg:   1908.831, min:    522.000, max:   3936.000
+23-07-2025 21:38:21 [INFO] - [output_num_tokens        ] avg:     99.608, min:     80.000, max:    120.000
+23-07-2025 21:38:21 [INFO] - [kv_cache_hit_rate        ] 98.85% (hits: 1228624, queries: 1242902)
+23-07-2025 21:38:21 [INFO] - --------------------------------------------------
+23-07-2025 21:38:30 [INFO] - Color.CYANFinished 12 out of 24 conversations (50%), 0 out of 2 clients finished, collected 331 measurements, runtime 234.159 secColor.RESET
+23-07-2025 21:38:30 [INFO] - Color.CYANEstimated req/sec 1.414, estimated runtime left 234.159 secColor.RESET
+23-07-2025 21:38:30 [INFO] - --------------------------------------------------
+23-07-2025 21:38:30 [INFO] - [moving_avg_ttft_ms       ] avg:     46.238 (30 samples)
+23-07-2025 21:38:30 [INFO] - [moving_avg_tpot_ms       ] avg:     13.080 (30 samples)
+23-07-2025 21:38:30 [INFO] - [ttft_ms                  ] avg:     40.167, min:     23.379, max:     61.766
+23-07-2025 21:38:30 [INFO] - [tpot_ms                  ] avg:     12.933, min:     12.530, max:     13.693
+23-07-2025 21:38:30 [INFO] - [latency_ms               ] avg:   1314.171, min:   1024.875, max:   1656.600
+23-07-2025 21:38:30 [INFO] - [input_num_turns          ] avg:      7.103, min:      1.000, max:     17.000
+23-07-2025 21:38:30 [INFO] - [input_num_tokens         ] avg:   1944.296, min:    522.000, max:   3936.000
+23-07-2025 21:38:30 [INFO] - [output_num_tokens        ] avg:     99.498, min:     80.000, max:    120.000
+23-07-2025 21:38:30 [INFO] - [kv_cache_hit_rate        ] 98.86% (hits: 1298800, queries: 1313792)
+23-07-2025 21:38:30 [INFO] - --------------------------------------------------
+23-07-2025 21:38:39 [INFO] - Color.CYANFinished 15 out of 24 conversations (62%), 0 out of 2 clients finished, collected 345 measurements, runtime 243.765 secColor.RESET
+23-07-2025 21:38:39 [INFO] - Color.CYANEstimated req/sec 1.415, estimated runtime left 146.259 secColor.RESET
+23-07-2025 21:38:39 [INFO] - --------------------------------------------------
+23-07-2025 21:38:39 [INFO] - [moving_avg_ttft_ms       ] avg:     47.223 (30 samples)
+23-07-2025 21:38:39 [INFO] - [moving_avg_tpot_ms       ] avg:     13.126 (30 samples)
+23-07-2025 21:38:39 [INFO] - [ttft_ms                  ] avg:     40.460, min:     23.379, max:     61.766
+23-07-2025 21:38:39 [INFO] - [tpot_ms                  ] avg:     12.940, min:     12.530, max:     13.693
+23-07-2025 21:38:39 [INFO] - [latency_ms               ] avg:   1312.668, min:   1024.875, max:   1656.600
+23-07-2025 21:38:39 [INFO] - [input_num_turns          ] avg:      7.371, min:      1.000, max:     17.000
+23-07-2025 21:38:39 [INFO] - [input_num_tokens         ] avg:   1974.794, min:    522.000, max:   3936.000
+23-07-2025 21:38:39 [INFO] - [output_num_tokens        ] avg:     99.310, min:     80.000, max:    120.000
+23-07-2025 21:38:39 [INFO] - [kv_cache_hit_rate        ] 98.84% (hits: 1375776, queries: 1391980)
+23-07-2025 21:38:39 [INFO] - --------------------------------------------------
+23-07-2025 21:38:47 [INFO] - Color.CYANFinished 18 out of 24 conversations (75%), 0 out of 2 clients finished, collected 354 measurements, runtime 250.966 secColor.RESET
+23-07-2025 21:38:47 [INFO] - Color.CYANEstimated req/sec 1.411, estimated runtime left 83.655 secColor.RESET
+23-07-2025 21:38:47 [INFO] - --------------------------------------------------
+23-07-2025 21:38:47 [INFO] - [moving_avg_ttft_ms       ] avg:     47.613 (30 samples)
+23-07-2025 21:38:47 [INFO] - [moving_avg_tpot_ms       ] avg:     13.128 (30 samples)
+23-07-2025 21:38:47 [INFO] - [ttft_ms                  ] avg:     40.633, min:     23.379, max:     61.766
+23-07-2025 21:38:47 [INFO] - [tpot_ms                  ] avg:     12.945, min:     12.530, max:     13.693
+23-07-2025 21:38:47 [INFO] - [latency_ms               ] avg:   1315.134, min:   1024.875, max:   1656.600
+23-07-2025 21:38:47 [INFO] - [input_num_turns          ] avg:      7.571, min:      1.000, max:     17.000
+23-07-2025 21:38:47 [INFO] - [input_num_tokens         ] avg:   1994.257, min:    522.000, max:   3936.000
+23-07-2025 21:38:47 [INFO] - [output_num_tokens        ] avg:     99.446, min:     80.000, max:    120.000
+23-07-2025 21:38:47 [INFO] - [kv_cache_hit_rate        ] 98.82% (hits: 1421856, queries: 1438880)
+23-07-2025 21:38:47 [INFO] - --------------------------------------------------
+23-07-2025 21:38:47 [INFO] - Color.CYANClient 1 is done (num_successes=180, num_failures=0)Color.RESET
+23-07-2025 21:38:47 [INFO] - Color.CYAN1 out of 2 clients finishedColor.RESET
+23-07-2025 21:39:00 [INFO] - Color.CYANFinished 21 out of 24 conversations (88%), 1 out of 2 clients finished, collected 364 measurements, runtime 264.504 secColor.RESET
+23-07-2025 21:39:00 [INFO] - Color.CYANEstimated req/sec 1.376, estimated runtime left 37.786 secColor.RESET
+23-07-2025 21:39:00 [INFO] - --------------------------------------------------
+23-07-2025 21:39:00 [INFO] - [moving_avg_ttft_ms       ] avg:     47.382 (30 samples)
+23-07-2025 21:39:00 [INFO] - [moving_avg_tpot_ms       ] avg:     13.069 (30 samples)
+23-07-2025 21:39:00 [INFO] - [ttft_ms                  ] avg:     40.802, min:     23.379, max:     61.766
+23-07-2025 21:39:00 [INFO] - [tpot_ms                  ] avg:     12.945, min:     12.530, max:     13.693
+23-07-2025 21:39:00 [INFO] - [latency_ms               ] avg:   1317.593, min:   1024.875, max:   1656.600
+23-07-2025 21:39:00 [INFO] - [input_num_turns          ] avg:      7.725, min:      1.000, max:     17.000
+23-07-2025 21:39:00 [INFO] - [input_num_tokens         ] avg:   2028.753, min:    522.000, max:   3936.000
+23-07-2025 21:39:00 [INFO] - [output_num_tokens        ] avg:     99.626, min:     80.000, max:    120.000
+23-07-2025 21:39:00 [INFO] - [kv_cache_hit_rate        ] 98.84% (hits: 1462544, queries: 1479641)
+23-07-2025 21:39:00 [INFO] - --------------------------------------------------
+23-07-2025 21:39:09 [INFO] - Color.CYANClient 0 is done (num_successes=190, num_failures=0)Color.RESET
+23-07-2025 21:39:09 [INFO] - Color.CYANFinished 24 out of 24 conversations (100%), 1 out of 2 clients finished, collected 370 measurements, runtime 273.090 secColor.RESET
+23-07-2025 21:39:09 [INFO] - Color.CYANEstimated req/sec 1.355, estimated runtime left 0.0 secColor.RESET
+23-07-2025 21:39:09 [INFO] - --------------------------------------------------
+23-07-2025 21:39:09 [INFO] - [moving_avg_ttft_ms       ] avg:     47.760 (30 samples)
+23-07-2025 21:39:09 [INFO] - [moving_avg_tpot_ms       ] avg:     13.008 (30 samples)
+23-07-2025 21:39:09 [INFO] - [ttft_ms                  ] avg:     40.942, min:     23.379, max:     61.766
+23-07-2025 21:39:09 [INFO] - [tpot_ms                  ] avg:     12.942, min:     12.530, max:     13.693
+23-07-2025 21:39:09 [INFO] - [latency_ms               ] avg:   1317.831, min:   1024.875, max:   1656.600
+23-07-2025 21:39:09 [INFO] - [input_num_turns          ] avg:      7.854, min:      1.000, max:     17.000
+23-07-2025 21:39:09 [INFO] - [input_num_tokens         ] avg:   2051.908, min:    522.000, max:   3936.000
+23-07-2025 21:39:09 [INFO] - [output_num_tokens        ] avg:     99.654, min:     80.000, max:    120.000
+23-07-2025 21:39:09 [INFO] - [kv_cache_hit_rate        ] 98.85% (hits: 1483712, queries: 1501023)
+23-07-2025 21:39:09 [INFO] - --------------------------------------------------
+23-07-2025 21:39:09 [INFO] - Color.CYAN2 out of 2 clients finishedColor.RESET
+23-07-2025 21:39:09 [INFO] - Color.CYANAll 2 clients finishedColor.RESET
+23-07-2025 21:39:09 [INFO] - Collected 370 samples from all the clients
+23-07-2025 21:39:09 [INFO] - Color.CYANWaiting for client client_0 (is alive: True)Color.RESET
+23-07-2025 21:39:09 [INFO] - Color.CYANWaiting for client client_1 (is alive: False)Color.RESET
+23-07-2025 21:39:09 [INFO] - All 2 clients exited (successfully finished 24 out of 24 conversations)
+23-07-2025 21:39:09 [INFO] - Color.GREENAll clients finished, total runtime: 273.124 sec (273124.116 ms), requests per second: 1.355Color.RESET
+23-07-2025 21:39:09 [INFO] - Processing 370 samples...
+----------------------------------------------------------------------------------------------------
+Color.YELLOWParameters:Color.RESET
+model=meta-llama/Meta-Llama-3.1-8B-Instruct
+num_clients=2
+num_conversations=24
+active_conversations=24
+seed=0
+Color.YELLOWConversations Generation Parameters:Color.RESET
+text_files=pg1184.txt
+input_num_turns=UniformDistribution[12, 18]
+input_common_prefix_num_tokens=Constant[500]
+input_prefix_num_tokens=LognormalDistribution[6, 4]
+input_num_tokens=UniformDistribution[120, 160]
+output_num_tokens=UniformDistribution[80, 120]
+----------------------------------------------------------------------------------------------------
+Color.YELLOWStatistics summary:Color.RESET
+runtime_sec = 272.924
+requests_per_sec = 1.356
+kv_cache_queries = 1501023.000
+kv_cache_hits = 1483712.000
+kv_cache_hit_rate = 98.85%
+----------------------------------------------------------------------------------------------------
+                   count     mean     std      min      25%      50%      75%      90%      99%      max
+ttft_ms            370.0    40.94    7.47    23.38    34.91    41.30    45.97    50.16    56.89    61.77
+tpot_ms            370.0    12.94    0.17    12.53    12.82    12.93    13.03    13.15    13.53    13.69
+latency_ms         370.0  1317.83  154.31  1024.87  1196.37  1307.70  1441.25  1536.08  1613.33  1656.60
+input_num_turns    370.0     7.85    4.66     1.00     3.00     7.00    11.00    15.00    17.00    17.00
+input_num_tokens   370.0  2051.91  884.45   522.00  1302.00  2020.00  2748.00  3236.00  3797.64  3936.00
+output_num_tokens  370.0    99.65   11.73    80.00    90.00    99.00   108.00   116.00   120.00   120.00
+output_num_chunks  370.0    98.65   11.73    79.00    89.00    98.00   107.00   115.00   119.00   119.00
+----------------------------------------------------------------------------------------------------Script started on 2025-07-23 22:50:36+00:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="192" LINES="25"]
+[?2004h(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ claude[Kk[K[K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ claudevllm serve $MODEL_NAME --disable-log-requestsexport MODEL_NAME=meta-llama/Meta-Llama-3.1-8B-Instruct[10Pvllm serve $MODEL_NAME --disable-log-requestsclaude[K[Kclaudevllm serve $MODEL_NAME --disable-log-requestsexport MODEL_NAME=meta-llama/Meta-Llama-3.1-8B-Instruct[10Pvllm serve $MODEL_NAME --disable-log-requestsexport MODEL_NAME=meta-llama/Meta-Llama-3.1-8B-Instructclear[Knvidia-smicurl http://localhost:8000/v1/modelspython benchmark_serving_multi_turn.py --model $MODEL_NAME --input-file generate_multi_turn.json --num-clients 2 --max-active-conversations 12 --conversation-sampling random --no-early-stop[C[C[C[C[C[C[C[C[C[C[C24[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C12[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[A[C[C[Ccurl http://localhost:8000/v1/models[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cnvidia-smi[K[5Pclearexport MODEL_NAME=meta-llama/Meta-Llama-3.1-8B-Instruct[10Pvllm serve $MODEL_NAME --disable-log-requestsclaude[K[Kclaudevllm serve $MODEL_NAME --disable-log-requestsexport MODEL_NAME=meta-llama/Meta-Llama-3.1-8B-Instruct[10Pvllm serve $MODEL_NAME --disable-log-requestsclaude[K[Kclaudevllm serve $MODEL_NAME --disable-log-requestsexport MODEL_NAME=meta-llama/Meta-Llama-3.1-8B-Instructclear[Knvidia-smicurl http://localhost:8000/v1/modelspython benchmark_serving_multi_turn.py --model $MODEL_NAME --input-file generate_multi_turn.json --num-clients 2 --max-active-conversations 12 --conversation-sampling random --no-early-stop[C
+[?2004l23-07-2025 22:51:36 [INFO] - Namespace(input_file='generate_multi_turn.json', output_file=None, seed=0, model='meta-llama/Meta-Llama-3.1-8B-Instruct', url='http://localhost:8000', num_clients=2, max_active_conversations=12, max_num_requests=None, warmup_step=False, max_turns=None, no_early_stop=True, limit_max_tokens=0, limit_min_tokens=0, request_rate=0, conversation_sampling=<ConversationSampling.RANDOM: 'random'>, verify_output=False, no_stream=False, excel_output=False, verbose=False, print_content=False, warmup_percentages='0%')
+23-07-2025 22:51:36 [INFO] - Color.GREENInput parameters:Color.RESET
+23-07-2025 22:51:36 [INFO] - url=http://localhost:8000
+23-07-2025 22:51:36 [INFO] - model=meta-llama/Meta-Llama-3.1-8B-Instruct
+23-07-2025 22:51:36 [INFO] - num_clients=2
+23-07-2025 22:51:36 [INFO] - Warmup percentages (percentage of samples): [0.0]
+23-07-2025 22:51:36 [INFO] - Loading tokenizer
+23-07-2025 22:51:37 [INFO] - Color.BLUECollecting information from server: http://localhost:8000Color.RESET
+23-07-2025 22:51:37 [INFO] - Color.BLUEServer version: {"version":"0.1.dev7496+g95eb233"}Color.RESET
+23-07-2025 22:51:37 [INFO] - Color.BLUEModels:Color.RESET
+23-07-2025 22:51:37 [INFO] - Color.BLUE	model_id='meta-llama/Meta-Llama-3.1-8B-Instruct', max_model_len=131072Color.RESET
+23-07-2025 22:51:37 [INFO] - Reading input file: generate_multi_turn.json
+23-07-2025 22:51:37 [INFO] - Using input file with filetype: generate_conversations
+23-07-2025 22:51:37 [INFO] - Color.PURPLEGenerating conversations with seed 0...Color.RESET
+23-07-2025 22:51:37 [INFO] - GenConvArgs(num_conversations=24, text_files=['pg1184.txt'], input_num_turns=UniformDistribution[12, 18], input_common_prefix_num_tokens=Constant[500], input_prefix_num_tokens=LognormalDistribution[6, 4], input_num_tokens=UniformDistribution[120, 160], output_num_tokens=UniformDistribution[80, 120], print_stats=False)
+Token indices sequence length is longer than the specified maximum sequence length for this model (651815 > 131072). Running this sequence through the model will result in indexing errors
+23-07-2025 22:51:39 [INFO] - Color.GREENStarting 2 clientsColor.RESET
+23-07-2025 22:51:39 [INFO] - Color.CYANStarted client 0: max_num_requests=None, max_active_conversations=6Color.RESET
+23-07-2025 22:51:39 [INFO] - Color.CYANStarted client 1: max_num_requests=None, max_active_conversations=6Color.RESET
+23-07-2025 22:53:34 [INFO] - Color.CYANFinished 3 out of 24 conversations (12%), 0 out of 2 clients finished, collected 159 measurements, runtime 114.584 secColor.RESET
+23-07-2025 22:53:34 [INFO] - Color.CYANEstimated req/sec 1.388, estimated runtime left 802.091 secColor.RESET
+23-07-2025 22:53:34 [INFO] - --------------------------------------------------
+23-07-2025 22:53:34 [INFO] - [moving_avg_ttft_ms       ] avg:     45.469 (30 samples)
+23-07-2025 22:53:34 [INFO] - [moving_avg_tpot_ms       ] avg:     13.049 (30 samples)
+23-07-2025 22:53:34 [INFO] - [ttft_ms                  ] avg:     41.140, min:     27.400, max:     61.564
+23-07-2025 22:53:34 [INFO] - [tpot_ms                  ] avg:     12.960, min:     12.714, max:     13.554
+23-07-2025 22:53:34 [INFO] - [latency_ms               ] avg:   1336.610, min:   1039.590, max:   1604.814
+23-07-2025 22:53:34 [INFO] - [input_num_turns          ] avg:      6.547, min:      1.000, max:     15.000
+23-07-2025 22:53:34 [INFO] - [input_num_tokens         ] avg:   2286.377, min:    522.000, max:   3716.000
+23-07-2025 22:53:34 [INFO] - [output_num_tokens        ] avg:    100.969, min:     80.000, max:    120.000
+23-07-2025 22:53:34 [INFO] - [kv_cache_hit_rate        ] 99.58% (hits: 736528, queries: 739620)
+23-07-2025 22:53:34 [INFO] - --------------------------------------------------
+23-07-2025 22:53:43 [INFO] - Color.CYANFinished 6 out of 24 conversations (25%), 0 out of 2 clients finished, collected 172 measurements, runtime 124.081 secColor.RESET
+23-07-2025 22:53:43 [INFO] - Color.CYANEstimated req/sec 1.386, estimated runtime left 372.242 secColor.RESET
+23-07-2025 22:53:43 [INFO] - --------------------------------------------------
+23-07-2025 22:53:43 [INFO] - [moving_avg_ttft_ms       ] avg:     43.973 (30 samples)
+23-07-2025 22:53:43 [INFO] - [moving_avg_tpot_ms       ] avg:     12.973 (30 samples)
+23-07-2025 22:53:43 [INFO] - [ttft_ms                  ] avg:     41.031, min:     25.274, max:     61.564
+23-07-2025 22:53:43 [INFO] - [tpot_ms                  ] avg:     12.956, min:     12.714, max:     13.554
+23-07-2025 22:53:43 [INFO] - [latency_ms               ] avg:   1338.854, min:   1039.590, max:   1604.814
+23-07-2025 22:53:43 [INFO] - [input_num_turns          ] avg:      6.698, min:      1.000, max:     15.000
+23-07-2025 22:53:43 [INFO] - [input_num_tokens         ] avg:   2273.913, min:    522.000, max:   3716.000
+23-07-2025 22:53:43 [INFO] - [output_num_tokens        ] avg:    101.174, min:     80.000, max:    120.000
+23-07-2025 22:53:43 [INFO] - [kv_cache_hit_rate        ] 99.55% (hits: 792800, queries: 796402)
+23-07-2025 22:53:43 [INFO] - --------------------------------------------------
+23-07-2025 22:54:01 [INFO] - Color.CYANFinished 9 out of 24 conversations (38%), 0 out of 2 clients finished, collected 197 measurements, runtime 141.208 secColor.RESET
+23-07-2025 22:54:01 [INFO] - Color.CYANEstimated req/sec 1.395, estimated runtime left 235.346 secColor.RESET
+23-07-2025 22:54:01 [INFO] - --------------------------------------------------
+23-07-2025 22:54:01 [INFO] - [moving_avg_ttft_ms       ] avg:     41.282 (30 samples)
+23-07-2025 22:54:01 [INFO] - [moving_avg_tpot_ms       ] avg:     12.933 (30 samples)
+23-07-2025 22:54:01 [INFO] - [ttft_ms                  ] avg:     41.191, min:     25.274, max:     61.564
+23-07-2025 22:54:01 [INFO] - [tpot_ms                  ] avg:     12.956, min:     12.714, max:     13.554
+23-07-2025 22:54:01 [INFO] - [latency_ms               ] avg:   1331.927, min:   1039.590, max:   1604.814
+23-07-2025 22:54:01 [INFO] - [input_num_turns          ] avg:      7.122, min:      1.000, max:     17.000
+23-07-2025 22:54:01 [INFO] - [input_num_tokens         ] avg:   2291.579, min:    522.000, max:   3897.000
+23-07-2025 22:54:01 [INFO] - [output_num_tokens        ] avg:    100.629, min:     80.000, max:    120.000
+23-07-2025 22:54:01 [INFO] - [kv_cache_hit_rate        ] 99.56% (hits: 914352, queries: 918367)
+23-07-2025 22:54:01 [INFO] - --------------------------------------------------
+23-07-2025 22:54:48 [INFO] - Color.CYANFinished 12 out of 24 conversations (50%), 0 out of 2 clients finished, collected 266 measurements, runtime 188.294 secColor.RESET
+23-07-2025 22:54:48 [INFO] - Color.CYANEstimated req/sec 1.413, estimated runtime left 188.294 secColor.RESET
+23-07-2025 22:54:48 [INFO] - --------------------------------------------------
+23-07-2025 22:54:48 [INFO] - [moving_avg_ttft_ms       ] avg:     34.197 (30 samples)
+23-07-2025 22:54:48 [INFO] - [moving_avg_tpot_ms       ] avg:     12.739 (30 samples)
+23-07-2025 22:54:48 [INFO] - [ttft_ms                  ] avg:     39.683, min:     23.021, max:     61.564
+23-07-2025 22:54:48 [INFO] - [tpot_ms                  ] avg:     12.905, min:     12.494, max:     13.554
+23-07-2025 22:54:48 [INFO] - [latency_ms               ] avg:   1316.648, min:   1029.803, max:   1604.814
+23-07-2025 22:54:48 [INFO] - [input_num_turns          ] avg:      6.789, min:      1.000, max:     17.000
+23-07-2025 22:54:48 [INFO] - [input_num_tokens         ] avg:   2052.109, min:    522.000, max:   3897.000
+23-07-2025 22:54:48 [INFO] - [output_num_tokens        ] avg:     99.940, min:     80.000, max:    120.000
+23-07-2025 22:54:48 [INFO] - [kv_cache_hit_rate        ] 99.46% (hits: 1105600, queries: 1111606)
+23-07-2025 22:54:48 [INFO] - --------------------------------------------------
+23-07-2025 22:55:24 [INFO] - Color.CYANFinished 15 out of 24 conversations (62%), 0 out of 2 clients finished, collected 317 measurements, runtime 224.618 secColor.RESET
+23-07-2025 22:55:24 [INFO] - Color.CYANEstimated req/sec 1.411, estimated runtime left 134.771 secColor.RESET
+23-07-2025 22:55:24 [INFO] - --------------------------------------------------
+23-07-2025 22:55:24 [INFO] - [moving_avg_ttft_ms       ] avg:     39.327 (30 samples)
+23-07-2025 22:55:24 [INFO] - [moving_avg_tpot_ms       ] avg:     12.860 (30 samples)
+23-07-2025 22:55:24 [INFO] - [ttft_ms                  ] avg:     39.686, min:     23.021, max:     61.564
+23-07-2025 22:55:24 [INFO] - [tpot_ms                  ] avg:     12.898, min:     12.494, max:     13.554
+23-07-2025 22:55:24 [INFO] - [latency_ms               ] avg:   1317.266, min:   1029.803, max:   1604.814
+23-07-2025 22:55:24 [INFO] - [input_num_turns          ] avg:      7.069, min:      1.000, max:     17.000
+23-07-2025 22:55:24 [INFO] - [input_num_tokens         ] avg:   1999.864, min:    522.000, max:   3897.000
+23-07-2025 22:55:24 [INFO] - [output_num_tokens        ] avg:    100.044, min:     80.000, max:    120.000
+23-07-2025 22:55:24 [INFO] - [kv_cache_hit_rate        ] 99.41% (hits: 1286064, queries: 1293651)
+23-07-2025 22:55:24 [INFO] - --------------------------------------------------
+23-07-2025 22:55:39 [INFO] - Color.CYANFinished 18 out of 24 conversations (75%), 0 out of 2 clients finished, collected 340 measurements, runtime 240.039 secColor.RESET
+23-07-2025 22:55:39 [INFO] - Color.CYANEstimated req/sec 1.416, estimated runtime left 80.013 secColor.RESET
+23-07-2025 22:55:39 [INFO] - --------------------------------------------------
+23-07-2025 22:55:39 [INFO] - [moving_avg_ttft_ms       ] avg:     41.695 (30 samples)
+23-07-2025 22:55:39 [INFO] - [moving_avg_tpot_ms       ] avg:     12.920 (30 samples)
+23-07-2025 22:55:39 [INFO] - [ttft_ms                  ] avg:     39.827, min:     23.021, max:     61.564
+23-07-2025 22:55:39 [INFO] - [tpot_ms                  ] avg:     12.899, min:     12.494, max:     13.554
+23-07-2025 22:55:39 [INFO] - [latency_ms               ] avg:   1312.861, min:   1029.803, max:   1604.814
+23-07-2025 22:55:39 [INFO] - [input_num_turns          ] avg:      7.312, min:      1.000, max:     17.000
+23-07-2025 22:55:39 [INFO] - [input_num_tokens         ] avg:   2007.029, min:    522.000, max:   3897.000
+23-07-2025 22:55:39 [INFO] - [output_num_tokens        ] avg:     99.682, min:     80.000, max:    120.000
+23-07-2025 22:55:39 [INFO] - [kv_cache_hit_rate        ] 99.35% (hits: 1380656, queries: 1389726)
+23-07-2025 22:55:39 [INFO] - --------------------------------------------------
+23-07-2025 22:55:58 [INFO] - Color.CYANClient 1 is done (num_successes=182, num_failures=0)Color.RESET
+23-07-2025 22:55:58 [INFO] - Color.CYANFinished 21 out of 24 conversations (88%), 0 out of 2 clients finished, collected 366 measurements, runtime 259.081 secColor.RESET
+23-07-2025 22:55:58 [INFO] - Color.CYANEstimated req/sec 1.413, estimated runtime left 37.012 secColor.RESET
+23-07-2025 22:55:58 [INFO] - --------------------------------------------------
+23-07-2025 22:55:58 [INFO] - [moving_avg_ttft_ms       ] avg:     45.483 (30 samples)
+23-07-2025 22:55:58 [INFO] - [moving_avg_tpot_ms       ] avg:     12.984 (30 samples)
+23-07-2025 22:55:58 [INFO] - [ttft_ms                  ] avg:     40.263, min:     23.021, max:     61.564
+23-07-2025 22:55:58 [INFO] - [tpot_ms                  ] avg:     12.907, min:     12.494, max:     13.554
+23-07-2025 22:55:58 [INFO] - [latency_ms               ] avg:   1314.427, min:   1029.803, max:   1604.814
+23-07-2025 22:55:58 [INFO] - [input_num_turns          ] avg:      7.765, min:      1.000, max:     17.000
+23-07-2025 22:55:58 [INFO] - [input_num_tokens         ] avg:   2049.025, min:    522.000, max:   3936.000
+23-07-2025 22:55:58 [INFO] - [output_num_tokens        ] avg:     99.716, min:     80.000, max:    120.000
+23-07-2025 22:55:58 [INFO] - [kv_cache_hit_rate        ] 99.33% (hits: 1515680, queries: 1525843)
+23-07-2025 22:55:58 [INFO] - --------------------------------------------------
+23-07-2025 22:55:58 [INFO] - Color.CYAN1 out of 2 clients finishedColor.RESET
+23-07-2025 22:56:03 [INFO] - Color.CYANClient 0 is done (num_successes=188, num_failures=0)Color.RESET
+23-07-2025 22:56:03 [INFO] - Color.CYANFinished 24 out of 24 conversations (100%), 1 out of 2 clients finished, collected 369 measurements, runtime 263.511 secColor.RESET
+23-07-2025 22:56:03 [INFO] - Color.CYANEstimated req/sec 1.4, estimated runtime left 0.0 secColor.RESET
+23-07-2025 22:56:03 [INFO] - --------------------------------------------------
+23-07-2025 22:56:03 [INFO] - [moving_avg_ttft_ms       ] avg:     45.486 (30 samples)
+23-07-2025 22:56:03 [INFO] - [moving_avg_tpot_ms       ] avg:     12.972 (30 samples)
+23-07-2025 22:56:03 [INFO] - [ttft_ms                  ] avg:     40.283, min:     23.021, max:     61.564
+23-07-2025 22:56:03 [INFO] - [tpot_ms                  ] avg:     12.905, min:     12.494, max:     13.554
+23-07-2025 22:56:03 [INFO] - [latency_ms               ] avg:   1313.507, min:   1029.803, max:   1604.814
+23-07-2025 22:56:03 [INFO] - [input_num_turns          ] avg:      7.829, min:      1.000, max:     17.000
+23-07-2025 22:56:03 [INFO] - [input_num_tokens         ] avg:   2050.859, min:    522.000, max:   3936.000
+23-07-2025 22:56:03 [INFO] - [output_num_tokens        ] avg:     99.653, min:     80.000, max:    120.000
+23-07-2025 22:56:03 [INFO] - [kv_cache_hit_rate        ] 99.34% (hits: 1522800, queries: 1532984)
+23-07-2025 22:56:03 [INFO] - --------------------------------------------------
+23-07-2025 22:56:03 [INFO] - Color.CYAN2 out of 2 clients finishedColor.RESET
+23-07-2025 22:56:03 [INFO] - Color.CYANAll 2 clients finishedColor.RESET
+23-07-2025 22:56:03 [INFO] - Collected 370 samples from all the clients
+23-07-2025 22:56:03 [INFO] - Color.CYANWaiting for client client_0 (is alive: True)Color.RESET
+23-07-2025 22:56:03 [INFO] - Color.CYANWaiting for client client_1 (is alive: False)Color.RESET
+23-07-2025 22:56:03 [INFO] - All 2 clients exited (successfully finished 24 out of 24 conversations)
+23-07-2025 22:56:03 [INFO] - Color.GREENAll clients finished, total runtime: 263.545 sec (263545.470 ms), requests per second: 1.404Color.RESET
+23-07-2025 22:56:03 [INFO] - Processing 370 samples...
+----------------------------------------------------------------------------------------------------
+Color.YELLOWParameters:Color.RESET
+model=meta-llama/Meta-Llama-3.1-8B-Instruct
+num_clients=2
+num_conversations=24
+active_conversations=12
+seed=0
+Color.YELLOWConversations Generation Parameters:Color.RESET
+text_files=pg1184.txt
+input_num_turns=UniformDistribution[12, 18]
+input_common_prefix_num_tokens=Constant[500]
+input_prefix_num_tokens=LognormalDistribution[6, 4]
+input_num_tokens=UniformDistribution[120, 160]
+output_num_tokens=UniformDistribution[80, 120]
+----------------------------------------------------------------------------------------------------
+Color.YELLOWStatistics summary:Color.RESET
+runtime_sec = 263.347
+requests_per_sec = 1.405
+kv_cache_queries = 1535536.000
+kv_cache_hits = 1525344.000
+kv_cache_hit_rate = 99.34%
+----------------------------------------------------------------------------------------------------
+                   count     mean     std      min      25%      50%      75%      90%      99%      max
+ttft_ms            370.0    40.28    7.03    23.02    34.75    40.85    44.87    49.39    55.65    61.56
+tpot_ms            370.0    12.90    0.16    12.49    12.80    12.90    13.00    13.10    13.25    13.55
+latency_ms         370.0  1313.46  153.61  1029.80  1195.06  1302.78  1432.28  1530.91  1585.56  1604.81
+input_num_turns    370.0     7.85    4.66     1.00     3.00     7.00    11.00    15.00    17.00    17.00
+input_num_tokens   370.0  2051.91  884.45   522.00  1302.00  2020.00  2748.00  3236.00  3797.64  3936.00
+output_num_tokens  370.0    99.65   11.73    80.00    90.00    99.00   108.00   116.00   120.00   120.00
+output_num_chunks  370.0    98.65   11.73    79.00    89.00    98.00   107.00   115.00   119.00   119.00
+----------------------------------------------------------------------------------------------------
+[?2004h(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/benchmarks$ [K(base) jding@srv-sco-mlserver-01:~/vllm_multi_turn/ben

@@ -303,7 +303,7 @@ def print_conv_stats(conversations: ConversationsMap, tokenizer: AutoTokenizer) 
 
 
 def generate_conversations(
-    args: GenConvArgs, tokenizer: AutoTokenizer
+    args: GenConvArgs, tokenizer: AutoTokenizer, seed: int = 0
 ) -> ConversationsMap:
     # Text for all user prompts
     # (text from the input text files will be appended to this line)
@@ -312,7 +312,13 @@ def generate_conversations(
         tokenizer.encode(base_prompt_text, add_special_tokens=False)
     )
 
-    logger.info(f"{Color.PURPLE}Generating conversations...{Color.RESET}")
+    # Set random seed for consistent dataset generation
+    import random
+    import numpy as np
+    np.random.seed(seed)
+    random.seed(seed)
+    
+    logger.info(f"{Color.PURPLE}Generating conversations with seed {seed}...{Color.RESET}")
     logger.info(args)
 
     list_of_tokens = []
