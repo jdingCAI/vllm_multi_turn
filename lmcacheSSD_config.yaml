@@ -1,0 +1,8 @@
+# Basic configurations
+chunk_size: 256
+
+# CPU offloading configurations
+local_cpu: false
+max_local_cpu_size: 20  # 5GB CPU memory limit
+local_disk: "/home/jding/local_disk_storage"
+max_local_disk_size: 100  # 1TB disk memory limit

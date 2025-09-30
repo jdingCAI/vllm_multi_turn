@@ -1,0 +1,5 @@
+chunk_size: 256
+local_cpu: false
+local_disk: /home/jding/local_disk_storage
+max_local_cpu_size: 10
+max_local_disk_size: 10

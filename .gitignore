@@ -196,6 +196,16 @@ hip_compat.h
 # Benchmark dataset
 benchmarks/**/*.json
 
+# Benchmark results and configs
+benchmark_results/
+benchmarks/benchmark_results/
+benchmarks/configs/run_*/
+quick_results/
+
+# Benchmark output files
+*_output.txt
+benchmark_*.txt
+
 # Linting
 actionlint
 shellcheck*/

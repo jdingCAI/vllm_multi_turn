@@ -1,0 +1,78 @@
+# vLLM Multi-Turn Benchmark Configuration
+# Single source of truth for all benchmark parameters
+
+model: "meta-llama/Llama-3.1-8B-Instruct"
+
+# Workload configuration
+workload:
+  filetype: "generate_conversations"
+  num_conversations: 48
+  text_files:
+    - "pg1184.txt"
+  print_stats: false
+  
+  prompt_input:
+    num_turns:
+      distribution: "constant"
+      value: 12
+    common_prefix_num_tokens:
+      distribution: "constant"
+      value: 5120
+    prefix_num_tokens:
+      distribution: "constant"
+      value: 5120
+    num_tokens:
+      distribution: "constant"
+      value: 5120
+  
+  prompt_output:
+    num_tokens:
+      distribution: "constant"
+      value: 1
+
+# CPU offloading template
+lmcache_template:
+  chunk_size: 256
+  local_cpu: true
+  max_local_cpu_size: 450  # Will be varied during benchmarks
+
+# SSD offloading template
+lmcache_ssd_template:
+  chunk_size: 256
+  local_cpu: false
+  max_local_cpu_size: 5  # Default CPU size for SSD mode
+  local_disk: "/home/jding/local_disk_storage"
+  max_local_disk_size: 450  # Will be varied during benchmarks
+
+# Benchmark parameters
+benchmark:
+  num_clients: 2
+  max_active_conversations: 48
+  warmup_step: false
+  no_early_stop: true
+
+# Configuration for different offload modes
+# -1: HBM (GPU prefix caching)
+# 0: No caching (full recomputation)
+# >0: Offloading sizes in GB
+cpu_sizes:
+  - -1
+  - 450
+  - 300
+  - 200
+  - 100
+  - 0
+
+ssd_sizes:
+  - 450
+  - 300
+  - 200
+  - 100
+  
+
+# Path configurations
+paths:
+  output_dir: "benchmark_results"
+  workload_config: "configs/workload.json"
+  lmcache_template: "configs/lmcache_template.yaml"
+  lmcache_ssd_template: "configs/lmcache_ssd_template.yaml"

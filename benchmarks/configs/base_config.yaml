@@ -1,0 +1,28 @@
+# Base Configuration for vLLM Multi-Turn Benchmarking
+# This file contains the core settings shared across all benchmark runs
+
+model:
+  name: "meta-llama/Llama-3.1-8B-Instruct"
+  # Alternative models for testing
+  # name: "meta-llama/Llama-2-7b-chat-hf"
+  # name: "mistralai/Mistral-7B-Instruct-v0.1"
+
+# Paths configuration
+paths:
+  output_base_dir: "benchmark_results"
+  configs_dir: "configs"
+  workload_dir: "configs/workloads"
+  offload_dir: "configs/offload"
+  benchmark_dir: "configs/benchmark"
+  
+# Text files for conversation generation
+text_files:
+  - "pg1184.txt"
+  # Add more text files as needed
+  # - "pg2701.txt"  # Moby Dick
+  # - "pg1342.txt"  # Pride and Prejudice
+
+# Run metadata
+metadata:
+  version: "1.0.0"
+  environment: "development"  # Options: development, staging, production

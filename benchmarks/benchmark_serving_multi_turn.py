@@ -6,7 +6,9 @@ import json
 import logging
 import multiprocessing as mp
 import os
+import re
 import random
+import subprocess
 import time
 from collections import Counter, deque
 from datetime import datetime
@@ -36,6 +38,8 @@ from bench_utils import TEXT_SEPARATOR, Color, logger
 
 NUM_TOKENS_FROM_DATASET = 0
 TERM_SIGNAL = None
+LMCACHE_LOG_FILE = "/tmp/vllm_server_live.log"
+CLEAR_CACHE_BETWEEN_TURNS = False
 
 
 class ConversationSampling(str, Enum):
@@ -93,7 +97,7 @@ class RequestStats(NamedTuple):
     tpot_ms: float
     latency_ms: float
     start_time_ms: float
-    input_num_turns: int
+    input_num_messages: int
     input_num_tokens: int
     output_num_tokens: int
     output_num_chunks: int
@@ -101,19 +105,14 @@ class RequestStats(NamedTuple):
     approx_cached_percent: float
     conversation_id: str
     client_id: int
-    kv_cache_queries: Optional[float]
-    kv_cache_hits: Optional[float]
+    # Remove per-request KV cache metrics - will collect globally instead
 
     def __str__(self) -> str:
-        base_str = (
+        return (
             f"ttft_ms {self.ttft_ms:.2f}, tpot_ms {self.tpot_ms:.2f}, latency_ms {self.latency_ms:.2f}, input_num_tokens {self.input_num_tokens}, "  # noqa: E501
             f"output_num_tokens {self.output_num_tokens} ({self.output_num_chunks} chunks, {self.output_num_first_chunk_tokens} tokens in first chunk), "  # noqa: E501
             f"approx_cached_percent {self.approx_cached_percent:.2f}%"
         )
-        if self.kv_cache_queries is not None and self.kv_cache_hits is not None:
-            hit_rate = (self.kv_cache_hits / self.kv_cache_queries * 100) if self.kv_cache_queries > 0 else 0.0
-            base_str += f", kv_cache_hit_rate {hit_rate:.2f}%"
-        return base_str
 
 
 class MetricStats:
@@ -184,12 +183,10 @@ class DebugStats:
             "ttft_ms": MetricStats(),
             "tpot_ms": MetricStats(),
             "latency_ms": MetricStats(),
-            "input_num_turns": MetricStats(),
+            "input_num_messages": MetricStats(),
             "input_num_tokens": MetricStats(),
             "output_num_tokens": MetricStats(),
         }
-        self.total_kv_cache_queries = 0.0
-        self.total_kv_cache_hits = 0.0
 
     def update(self, data: RequestStats) -> None:
         self.metrics["ttft_ms"].update(data.ttft_ms)
@@ -197,26 +194,15 @@ class DebugStats:
         self.metrics["tpot_ms"].update(data.tpot_ms)
         self.metrics["moving_avg_tpot_ms"].update(data.tpot_ms)
         self.metrics["latency_ms"].update(data.latency_ms)
-        self.metrics["input_num_turns"].update(data.input_num_turns)
+        self.metrics["input_num_messages"].update(data.input_num_messages)
         self.metrics["input_num_tokens"].update(data.input_num_tokens)
         self.metrics["output_num_tokens"].update(data.output_num_tokens)
-        
-        # Update KV cache metrics if available
-        if data.kv_cache_queries is not None and data.kv_cache_hits is not None:
-            self.total_kv_cache_queries += data.kv_cache_queries
-            self.total_kv_cache_hits += data.kv_cache_hits
 
     def print(self) -> None:
         self.logger.info("-" * 50)
         for k, v in self.metrics.items():
             kv_info = f"[{k:25}] {v}"
             self.logger.info(kv_info)
-        
-        # Print KV cache statistics if available
-        if self.total_kv_cache_queries > 0:
-            hit_rate = (self.total_kv_cache_hits / self.total_kv_cache_queries) * 100
-            self.logger.info(f"[{'kv_cache_hit_rate':25}] {hit_rate:.2f}% (hits: {self.total_kv_cache_hits:.0f}, queries: {self.total_kv_cache_queries:.0f})")
-        
         self.logger.info("-" * 50)
 
 
@@ -234,6 +220,8 @@ def nanosec_to_millisec(value: float) -> float:
 
 def nanosec_to_sec(value: float) -> float:
     return value / 1000000000.0
+
+
 
 
 async def get_kv_cache_metrics(session: aiohttp.ClientSession, metrics_url: str) -> Tuple[Optional[float], Optional[float]]:
@@ -254,10 +242,10 @@ async def get_kv_cache_metrics(session: aiohttp.ClientSession, metrics_url: str)
             
             for family in text_string_to_metric_families(metrics_text):
                 # Try both new and deprecated metric names
-                if family.name in ["vllm:prefix_cache_queries", "vllm:gpu_prefix_cache_queries"]:
+                if family.name in ["vllm:prefix_cache_queries"]:
                     for sample in family.samples:
                         queries = sample.value
-                elif family.name in ["vllm:prefix_cache_hits", "vllm:gpu_prefix_cache_hits"]:
+                elif family.name in ["vllm:prefix_cache_hits"]:
                     for sample in family.samples:
                         hits = sample.value
             
@@ -265,6 +253,67 @@ async def get_kv_cache_metrics(session: aiohttp.ClientSession, metrics_url: str)
     except Exception as e:
         logger.debug(f"Failed to fetch KV cache metrics: {e}")
         return None, None
+
+
+def clear_page_cache() -> bool:
+    """Clear OS page cache. Returns True if successful."""
+    try:
+        # Use the custom drop-caches script that has passwordless sudo configured
+        result = subprocess.run(
+            ['sudo', '/usr/local/bin/drop-caches'],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+
+        if result.returncode != 0:
+            logger.warning(f"Failed to clear page cache: {result.stderr}")
+            return False
+
+        logger.debug("Successfully cleared page cache")
+        return True
+    except subprocess.TimeoutExpired:
+        logger.warning("Cache clearing command timed out")
+        return False
+    except Exception as e:
+        logger.warning(f"Error clearing page cache: {e}")
+        return False
+
+
+def get_lmcache_cpu_hit_stats(log_file: str = "/tmp/vllm_server_live.log") -> Tuple[int, int, float]:
+    """Parse LMCache logs to get CPU KV cache hit statistics.
+    
+    Args:
+        log_file: Path to the vLLM server log file containing LMCache output
+    
+    Returns:
+        Tuple of (total_tokens, total_hits, hit_rate_percent)
+    """
+    if not os.path.exists(log_file):
+        return 0, 0, 0.0
+    
+    try:
+        with open(log_file, 'r') as f:
+            log_content = f.read()
+        
+        # Pattern: "Total tokens X, LMCache hit tokens: Y"
+        pattern = re.compile(r'Total tokens\s*(\d+),\s*LMCache hit tokens:\s*(\d+)')
+        
+        total_tokens = 0
+        total_hits = 0
+        
+        for match in pattern.finditer(log_content):
+            tokens = int(match.group(1))
+            hits = int(match.group(2))
+            total_tokens += tokens
+            total_hits += hits
+        
+        hit_rate = (total_hits / total_tokens * 100) if total_tokens > 0 else 0.0
+        
+        return total_tokens, total_hits, hit_rate
+    except Exception as e:
+        logger.debug(f"Failed to parse LMCache logs: {e}")
+        return 0, 0, 0.0
 
 
 async def send_request(
@@ -419,6 +468,12 @@ async def send_turn(
     verify_output: bool,
     metrics_url: Optional[str] = None,
 ) -> Optional[RequestStats]:
+    # Clear page cache before sending the request if enabled
+    global CLEAR_CACHE_BETWEEN_TURNS
+    if CLEAR_CACHE_BETWEEN_TURNS:
+        logger.debug(f"Client {client_id}: Clearing page cache before turn {messages_to_use//2} of conversation {conv_id}")
+        if not clear_page_cache():
+            logger.warning(f"Client {client_id}: Failed to clear page cache before request")
     assert messages_to_use > 0
     assert messages_to_use <= len(conversation_messages)
 
@@ -461,12 +516,6 @@ async def send_turn(
 
         if max_tokens == NUM_TOKENS_FROM_DATASET:
             max_tokens = max(1, answer_num_tokens)
-
-    # Get KV cache metrics before the request
-    kv_cache_queries_before = None
-    kv_cache_hits_before = None
-    if metrics_url:
-        kv_cache_queries_before, kv_cache_hits_before = await get_kv_cache_metrics(session, metrics_url)
 
     # Send the current conversation to LLM and get a response
     response: ServerResponse = await send_request(
@@ -525,27 +574,14 @@ async def send_turn(
         # First chunk had only one token
         ttft_ms = response.ttft_ms
 
-    # Get KV cache metrics after the request
-    kv_cache_queries_after = None
-    kv_cache_hits_after = None
-    kv_cache_queries_delta = None
-    kv_cache_hits_delta = None
-    
-    if metrics_url:
-        kv_cache_queries_after, kv_cache_hits_after = await get_kv_cache_metrics(session, metrics_url)
-        
-        # Calculate the delta for this specific request
-        if all(x is not None for x in [kv_cache_queries_before, kv_cache_hits_before, 
-                                       kv_cache_queries_after, kv_cache_hits_after]):
-            kv_cache_queries_delta = kv_cache_queries_after - kv_cache_queries_before
-            kv_cache_hits_delta = kv_cache_hits_after - kv_cache_hits_before
+    # KV cache metrics will be collected globally after all requests complete
 
     rs = RequestStats(
         ttft_ms=ttft_ms,
         tpot_ms=tpot_ms,
         latency_ms=response.latency_ms,
         start_time_ms=response.start_time_ms,
-        input_num_turns=len(messages),
+        input_num_messages=len(messages),
         input_num_tokens=input_num_tokens,
         output_num_tokens=output_num_tokens,
         output_num_chunks=response.num_chunks,
@@ -553,8 +589,6 @@ async def send_turn(
         approx_cached_percent=approx_cached_percent,
         conversation_id=conv_id,
         client_id=client_id,
-        kv_cache_queries=kv_cache_queries_delta,
-        kv_cache_hits=kv_cache_hits_delta,
     )
 
     if verbose:
@@ -826,7 +860,7 @@ async def client_main(
                     num_failures += 1
 
                     logger.warning(
-                        f"{Color.YELLOW}Client {client_id} - Request rejected during conversation ID {conv_id} (turn: {current_turn}){Color.RESET}"  # noqa: E501
+                        f"{Color.YELLOW}Client {client_id} - Request rejected during conversation ID {conv_id} (turn: {turn_number}){Color.RESET}"  # noqa: E501
                     )
 
                     # Remove the conversation (should not be used again)
@@ -835,14 +869,14 @@ async def client_main(
             except asyncio.exceptions.TimeoutError:
                 num_failures += 1
                 logger.exception(
-                    f"{Color.RED}Client {client_id} - Timeout during conversation ID {conv_id} (turn: {current_turn}){Color.RESET}"  # noqa: E501
+                    f"{Color.RED}Client {client_id} - Timeout during conversation ID {conv_id} (turn: {turn_number}){Color.RESET}"  # noqa: E501
                 )
                 break  # Exit gracefully instead of raising an error
 
             except Exception:
                 num_failures += 1
                 logger.exception(
-                    f"{Color.RED}Client {client_id} - Exception during conversation ID {conv_id} (turn: {current_turn}){Color.RESET}"  # noqa: E501
+                    f"{Color.RED}Client {client_id} - Exception during conversation ID {conv_id} (turn: {turn_number}){Color.RESET}"  # noqa: E501
                 )
                 break  # Exit gracefully instead of raising an error
 
@@ -851,7 +885,8 @@ async def client_main(
 
                 # Update the turns counter to include the LLM response
                 # The LLM response will be used as context for the next user turn
-                turns_count[conv_id] += 1
+                # Increment by 2: one for the user request, one for the assistant response
+                turns_count[conv_id] += 2
 
                 max_turns = count_user_messages(messages)
                 if args.max_turns is not None:
@@ -1019,7 +1054,7 @@ async def main_mp(
     bench_args: BenchmarkArgs,
     tokenizer: AutoTokenizer,
     input_conv: ConversationsMap,
-) -> tuple[ConversationsMap, list[RequestStats]]:
+) -> tuple[ConversationsMap, list[RequestStats], Optional[Tuple[float, float]]]:
     # An event that will trigger graceful termination of all the clients
     stop_event = mp.Event()
 
@@ -1195,7 +1230,19 @@ async def main_mp(
     conv_queue.close()
     conv_queue.join_thread()
 
-    return output_conv, client_metrics
+    # Collect final KV cache metrics after all requests are done
+    kv_cache_metrics = None
+    if req_args.metrics_url:
+        try:
+            async with aiohttp.ClientSession() as session:
+                queries, hits = await get_kv_cache_metrics(session, req_args.metrics_url)
+                if queries is not None and hits is not None:
+                    kv_cache_metrics = (queries, hits)
+                    logger.info(f"{Color.GREEN}Final KV cache metrics - Queries: {queries:.0f}, Hits: {hits:.0f}, Hit rate: {(hits/queries*100):.2f}%{Color.RESET}")
+        except Exception as e:
+            logger.debug(f"Failed to collect final KV cache metrics: {e}")
+
+    return output_conv, client_metrics, kv_cache_metrics
 
 
 def get_filename_with_timestamp(label: str, extension: str) -> str:
@@ -1212,6 +1259,7 @@ def process_statistics(
     verbose: bool,
     gen_conv_args: Optional[GenConvArgs] = None,
     excel_output: bool = False,
+    kv_cache_metrics: Optional[Tuple[float, float]] = None,
 ) -> None:
     if len(client_metrics) == 0:
         logger.info("No samples to process")
@@ -1251,6 +1299,9 @@ def process_statistics(
 
     # Set precision for numbers in the output text (the dataframes)
     pd.set_option("display.precision", 2)
+    # Prevent column truncation in output
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.width", None)
 
     # Exclude parameters from RequestStats
     exclude = [
@@ -1260,8 +1311,6 @@ def process_statistics(
         "approx_cached_percent",
         "conversation_id",
         "client_id",
-        "kv_cache_queries",
-        "kv_cache_hits",
     ]
 
     print(TEXT_SEPARATOR)
@@ -1310,15 +1359,22 @@ def process_statistics(
 
         params = {"runtime_sec": runtime_sec, "requests_per_sec": requests_per_sec}
         
-        # Calculate total KV cache metrics
-        total_kv_queries = df["kv_cache_queries"].sum() if "kv_cache_queries" in df.columns else None
-        total_kv_hits = df["kv_cache_hits"].sum() if "kv_cache_hits" in df.columns else None
+        # Add KV cache metrics if available (collected once after all requests)
+        if kv_cache_metrics is not None:
+            queries, hits = kv_cache_metrics
+            if queries > 0:
+                kv_hit_rate = (hits / queries) * 100
+                params["kv_cache_queries"] = queries
+                params["kv_cache_hits"] = hits
+                params["kv_cache_hit_rate"] = kv_hit_rate
         
-        if total_kv_queries is not None and total_kv_hits is not None and total_kv_queries > 0:
-            kv_hit_rate = (total_kv_hits / total_kv_queries) * 100
-            params["kv_cache_queries"] = total_kv_queries
-            params["kv_cache_hits"] = total_kv_hits
-            params["kv_cache_hit_rate"] = kv_hit_rate
+        # Add LMCache CPU KV cache hit rate
+        lmcache_tokens, lmcache_hits, lmcache_hit_rate = get_lmcache_cpu_hit_stats(LMCACHE_LOG_FILE)
+        if lmcache_tokens > 0:
+            params["lmcache_cpu_tokens"] = lmcache_tokens
+            params["lmcache_cpu_hits"] = lmcache_hits
+            params["lmcache_cpu_hit_rate"] = lmcache_hit_rate
+        
 
         # Generate a summary of relevant metrics (and drop irrelevant data)
         df = df.drop(columns=exclude).describe(percentiles=percentiles).transpose()
@@ -1339,6 +1395,12 @@ def process_statistics(
         for k, v in params.items():
             if k == "kv_cache_hit_rate":
                 print(f"{k} = {v:.2f}%")
+            elif k == "lmcache_cpu_hit_rate":
+                print(f"{k} = {v:.2f}%")
+            elif k == "lmcache_cpu_tokens":
+                print(f"lmcache_cpu_tokens = {v:,}")
+            elif k == "lmcache_cpu_hits":
+                print(f"lmcache_cpu_hits = {v:,}")
             elif isinstance(v, float):
                 print(f"{k} = {v:.3f}")
             else:
@@ -1433,6 +1495,13 @@ async def main() -> None:
         type=str,
         default=None,
         help="Output JSON file containing conversations with updated assistant answers",
+    )
+
+    parser.add_argument(
+        "--lmcache-log-file",
+        type=str,
+        default="/tmp/vllm_server_live.log",
+        help="Path to vLLM server log file containing LMCache output (default: /tmp/vllm_server_live.log)",
     )
 
     parser.add_argument(
@@ -1579,7 +1648,45 @@ async def main() -> None:
         "(for example: --warmup-percentages=0%%,50%%)",
     )
 
+    parser.add_argument(
+        "--clear-cache-between-turns",
+        action="store_true",
+        help="Clear OS page cache before each request (requires sudo, for accurate SSD benchmarking)",
+    )
+
     args = parser.parse_args()
+
+    # Set global LMCache log file path and cache clearing flag
+    global LMCACHE_LOG_FILE, CLEAR_CACHE_BETWEEN_TURNS
+    LMCACHE_LOG_FILE = args.lmcache_log_file
+    CLEAR_CACHE_BETWEEN_TURNS = args.clear_cache_between_turns
+
+    # Check if cache clearing is enabled and we have necessary permissions
+    if CLEAR_CACHE_BETWEEN_TURNS:
+        # Check if we can use the drop-caches command
+        try:
+            # Test if the drop-caches command is available and executable
+            result = subprocess.run(
+                ['sudo', '/usr/local/bin/drop-caches'],
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            if result.returncode != 0:
+                logger.error("Cache clearing requested but 'sudo /usr/local/bin/drop-caches' failed")
+                logger.error(f"Error: {result.stderr}")
+                logger.error("Please ensure /usr/local/bin/drop-caches exists and has passwordless sudo configured")
+                raise RuntimeError("Cannot clear cache without proper permissions")
+            logger.info(f"{Color.GREEN}Page cache clearing is enabled between turns using /usr/local/bin/drop-caches{Color.RESET}")
+        except FileNotFoundError:
+            logger.error("Cache clearing requested but /usr/local/bin/drop-caches not found")
+            raise RuntimeError("drop-caches command not found")
+        except subprocess.TimeoutExpired:
+            logger.error("Cache clearing command timed out during verification")
+            raise RuntimeError("drop-caches command timed out")
+        except Exception as e:
+            logger.error(f"Failed to verify cache clearing capability: {e}")
+            raise
 
     logger.info(args)
 
@@ -1691,14 +1798,14 @@ async def main() -> None:
         warmup_bench_args = bench_args._replace(early_stop=False)
 
         logger.info(f"{Color.PURPLE}Warmup start{Color.RESET}")
-        conversations, _ = await main_mp(
+        conversations, _, _ = await main_mp(
             warmup_client_args, req_args, warmup_bench_args, tokenizer, conversations
         )
         logger.info(f"{Color.PURPLE}Warmup done{Color.RESET}")
 
     # Run the benchmark
     start_time = time.perf_counter_ns()
-    client_convs, client_metrics = await main_mp(
+    client_convs, client_metrics, kv_cache_metrics = await main_mp(
         client_args, req_args, bench_args, tokenizer, conversations
     )
     total_runtime_ms = nanosec_to_millisec(time.perf_counter_ns() - start_time)
@@ -1734,6 +1841,7 @@ async def main() -> None:
         verbose=args.verbose,
         gen_conv_args=gen_conv_args,
         excel_output=args.excel_output,
+        kv_cache_metrics=kv_cache_metrics,
     )
 
     if args.output_file is not None:

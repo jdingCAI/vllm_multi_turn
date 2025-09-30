@@ -1,0 +1,169 @@
+# Benchmark Configuration Template
+# This file can be used to define multiple benchmark configurations
+
+# Example configurations for different scenarios
+configs:
+  # Configuration 1: Standard benchmark with moderate load
+  standard:
+    model: 'meta-llama/Llama-3.1-8B-Instruct'
+    
+    workload:
+      filetype: 'generate_conversations'
+      num_conversations: 24
+      text_files: ['pg1184.txt']
+      print_stats: false
+      prompt_input:
+        num_turns:
+          distribution: 'constant'
+          value: 10
+        common_prefix_num_tokens:
+          distribution: 'constant'
+          value: 512
+        prefix_num_tokens:
+          distribution: 'constant'
+          value: 256
+        num_tokens:
+          distribution: 'constant'
+          value: 128
+      prompt_output:
+        num_tokens:
+          distribution: 'constant'
+          value: 128
+    
+    lmcache_template:
+      chunk_size: 256
+      local_cpu: true
+      max_local_cpu_size: 20  # Will be varied
+    
+    benchmark:
+      num_clients: 2
+      max_active_conversations: 24
+      warmup_step: true
+      no_early_stop: true
+    
+    cpu_sizes: [-1, 20, 10, 5, 1, 0]
+    
+  # Configuration 2: High concurrency test
+  high_concurrency:
+    model: 'meta-llama/Llama-3.1-8B-Instruct'
+    
+    workload:
+      filetype: 'generate_conversations'
+      num_conversations: 48
+      text_files: ['pg1184.txt']
+      print_stats: false
+      prompt_input:
+        num_turns:
+          distribution: 'constant'
+          value: 10
+        common_prefix_num_tokens:
+          distribution: 'constant'
+          value: 512
+        prefix_num_tokens:
+          distribution: 'constant'
+          value: 256
+        num_tokens:
+          distribution: 'constant'
+          value: 128
+      prompt_output:
+        num_tokens:
+          distribution: 'constant'
+          value: 128
+    
+    lmcache_template:
+      chunk_size: 256
+      local_cpu: true
+      max_local_cpu_size: 20
+    
+    benchmark:
+      num_clients: 8
+      max_active_conversations: 12
+      warmup_step: true
+      no_early_stop: true
+    
+    cpu_sizes: [20, 10, 5]
+    
+  # Configuration 3: Long conversation test
+  long_conversations:
+    model: 'meta-llama/Llama-3.1-8B-Instruct'
+    
+    workload:
+      filetype: 'generate_conversations'
+      num_conversations: 12
+      text_files: ['pg1184.txt']
+      print_stats: false
+      prompt_input:
+        num_turns:
+          distribution: 'constant'
+          value: 20  # Longer conversations
+        common_prefix_num_tokens:
+          distribution: 'constant'
+          value: 1024  # Larger common prefix
+        prefix_num_tokens:
+          distribution: 'constant'
+          value: 512
+        num_tokens:
+          distribution: 'constant'
+          value: 256
+      prompt_output:
+        num_tokens:
+          distribution: 'constant'
+          value: 256
+    
+    lmcache_template:
+      chunk_size: 256
+      local_cpu: true
+      max_local_cpu_size: 40  # Larger cache for longer conversations
+    
+    benchmark:
+      num_clients: 2
+      max_active_conversations: 12
+      warmup_step: true
+      no_early_stop: true
+    
+    cpu_sizes: [40, 20, 10, 5]
+    
+  # Configuration 4: Variable length test
+  variable_length:
+    model: 'meta-llama/Llama-3.1-8B-Instruct'
+    
+    workload:
+      filetype: 'generate_conversations'
+      num_conversations: 24
+      text_files: ['pg1184.txt']
+      print_stats: false
+      prompt_input:
+        num_turns:
+          distribution: 'uniform'
+          min: 5
+          max: 15
+        common_prefix_num_tokens:
+          distribution: 'uniform'
+          min: 256
+          max: 768
+        prefix_num_tokens:
+          distribution: 'uniform'
+          min: 128
+          max: 384
+        num_tokens:
+          distribution: 'uniform'
+          min: 64
+          max: 192
+      prompt_output:
+        num_tokens:
+          distribution: 'uniform'
+          min: 64
+          max: 192
+    
+    lmcache_template:
+      chunk_size: 256
+      local_cpu: true
+      max_local_cpu_size: 20
+    
+    benchmark:
+      num_clients: 4
+      max_active_conversations: 16
+      warmup_step: true
+      no_early_stop: true
+    
+    cpu_sizes: [20, 10, 5, 1]
