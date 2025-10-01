@@ -88,6 +88,8 @@ def parse_arguments():
                       help="Number of runs per configuration for averaging")
     parser.add_argument("--full", action="store_true",
                       help="Run full test suite with all configurations (default: quick mode)")
+    parser.add_argument("--mode", type=str, choices=["cpu", "disk", "both"], default="both",
+                      help="Benchmark mode: cpu (CPU/host memory only), disk (disk only), or both (default: both)")
     return parser.parse_args()
 
 def drop_page_cache():
@@ -180,7 +182,7 @@ def calculate_gpu_utilization(target_memory_gb=75):
         raise RuntimeError("No GPU available")
 
     total_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-    return min(target_memory_gb / total_memory, 0.95)  # Cap at 95%
+    return max(target_memory_gb / total_memory, 0.95)  # Cap at 95%
 
 def create_test_prompts(num_prompts, num_tokens, config_label="default"):
     """Create test prompts with unique content for each configuration.
@@ -290,7 +292,7 @@ def benchmark_single_disk_config(num_prompts, num_tokens, label, runs=3, model_n
 
     # Calculate required cache size using shared function
     kv_size_gb = calculate_message_size_gb(num_prompts, num_tokens)
-    cache_size = max(30, int(kv_size_gb * 1.5))  # 50% buffer
+    cache_size = max(30, int(kv_size_gb * 1.2))  # 20% buffer
     print(f"    KV cache size: {kv_size_gb:.2f}GB, Cache allocation: {cache_size}GB")
 
     # Clean cache files before this test
@@ -380,7 +382,7 @@ def benchmark_single_cpu_config(num_prompts, num_tokens, label, runs=3, model_na
 
     # Calculate required cache size using shared function
     kv_size_gb = calculate_message_size_gb(num_prompts, num_tokens)
-    cache_size = max(30, int(kv_size_gb * 1.2))  # 50% buffer
+    cache_size = max(30, int(kv_size_gb * 1.1))  # 10% buffer
     print(f"    KV cache size: {kv_size_gb:.2f}GB, Cache allocation: {cache_size}GB")
 
     # Setup environment for this specific configuration
@@ -589,7 +591,8 @@ def main():
     print(f"Model: {args.model}")
     print(f"Max length: {args.max_model_len}")
     print(f"Runs per config: {args.runs_per_config}")
-    print(f"Mode: {'Full' if args.full else 'Quick'}")
+    print(f"Test Mode: {'Full' if args.full else 'Quick'}")
+    print(f"Benchmark Mode: {args.mode.upper()}")
     print("="*60)
 
     # Get configurations
@@ -602,41 +605,47 @@ def main():
     cpu_results = {}
     disk_results = {}
 
-    # Phase 1: Benchmark CPU/host memory loading with fresh models
-    print("\n" + "="*60)
-    print("PHASE 1: CPU/HOST MEMORY LOADING BENCHMARKS")
-    print("="*60)
+    # Phase 1: Benchmark CPU/host memory loading with fresh models (if enabled)
+    if args.mode in ["cpu", "both"]:
+        print("\n" + "="*60)
+        print("PHASE 1: CPU/HOST MEMORY LOADING BENCHMARKS")
+        print("="*60)
 
-    for num_prompts, num_tokens, label in configs:
-        try:
-            cpu_results[label] = benchmark_single_cpu_config(
-                num_prompts, num_tokens, label,
-                runs=args.runs_per_config,
-                model_name=args.model,
-                max_model_len=args.max_model_len
-            )
-            print(f"  ✓ Completed CPU benchmark for {label}")
-        except Exception as e:
-            print(f"  ✗ Failed CPU benchmark for {label}: {e}")
-            cpu_results[label] = (0, 0, 0)  # Default values for failed runs
+        for num_prompts, num_tokens, label in configs:
+            try:
+                cpu_results[label] = benchmark_single_cpu_config(
+                    num_prompts, num_tokens, label,
+                    runs=args.runs_per_config,
+                    model_name=args.model,
+                    max_model_len=args.max_model_len
+                )
+                print(f"  ✓ Completed CPU benchmark for {label}")
+            except Exception as e:
+                print(f"  ✗ Failed CPU benchmark for {label}: {e}")
+                cpu_results[label] = (0, 0, 0)  # Default values for failed runs
+    else:
+        print("\n⚠️ Skipping CPU benchmarks (mode: disk only)")
 
-    # Phase 2: Benchmark disk loading with fresh models
-    print("\n" + "="*60)
-    print("PHASE 2: DISK LOADING BENCHMARKS")
-    print("="*60)
+    # Phase 2: Benchmark disk loading with fresh models (if enabled)
+    if args.mode in ["disk", "both"]:
+        print("\n" + "="*60)
+        print("PHASE 2: DISK LOADING BENCHMARKS")
+        print("="*60)
 
-    for num_prompts, num_tokens, label in configs:
-        try:
-            disk_results[label] = benchmark_single_disk_config(
-                num_prompts, num_tokens, label,
-                runs=args.runs_per_config,
-                model_name=args.model,
-                max_model_len=args.max_model_len
-            )
-            print(f"  ✓ Completed disk benchmark for {label}")
-        except Exception as e:
-            print(f"  ✗ Failed disk benchmark for {label}: {e}")
-            disk_results[label] = (0, 0, 0)  # Default values for failed runs
+        for num_prompts, num_tokens, label in configs:
+            try:
+                disk_results[label] = benchmark_single_disk_config(
+                    num_prompts, num_tokens, label,
+                    runs=args.runs_per_config,
+                    model_name=args.model,
+                    max_model_len=args.max_model_len
+                )
+                print(f"  ✓ Completed disk benchmark for {label}")
+            except Exception as e:
+                print(f"  ✗ Failed disk benchmark for {label}: {e}")
+                disk_results[label] = (0, 0, 0)  # Default values for failed runs
+    else:
+        print("\n⚠️ Skipping disk benchmarks (mode: cpu only)")
 
     # Combine and analyze results
     print("\n" + "="*60)
@@ -645,7 +654,45 @@ def main():
 
     results = []
     for num_prompts, num_tokens, label in configs:
-        if label in cpu_results and label in disk_results:
+        # Handle different modes
+        if args.mode == "cpu" and label in cpu_results:
+            # CPU only mode
+            cpu_avg, cpu_std, cpu_populate_time = cpu_results[label]
+            result = {
+                'num_prompts': num_prompts,
+                'num_tokens': num_tokens,
+                'label': label,
+                'message_size_gb': calculate_message_size_gb(num_prompts, num_tokens),
+                'populate_time': cpu_populate_time,
+                'cpu_avg': cpu_avg,
+                'cpu_std': cpu_std,
+                'disk_avg': 0,
+                'disk_std': 0,
+                'cpu_vs_disk_speedup': 0,
+                'disk_vs_populate_speedup': 0,
+                'cpu_vs_populate_speedup': cpu_populate_time / cpu_avg if cpu_avg > 0 else 0
+            }
+            results.append(result)
+        elif args.mode == "disk" and label in disk_results:
+            # Disk only mode
+            disk_avg, disk_std, disk_populate_time = disk_results[label]
+            result = {
+                'num_prompts': num_prompts,
+                'num_tokens': num_tokens,
+                'label': label,
+                'message_size_gb': calculate_message_size_gb(num_prompts, num_tokens),
+                'populate_time': disk_populate_time,
+                'cpu_avg': 0,
+                'cpu_std': 0,
+                'disk_avg': disk_avg,
+                'disk_std': disk_std,
+                'cpu_vs_disk_speedup': 0,
+                'disk_vs_populate_speedup': disk_populate_time / disk_avg if disk_avg > 0 else 0,
+                'cpu_vs_populate_speedup': 0
+            }
+            results.append(result)
+        elif args.mode == "both" and label in cpu_results and label in disk_results:
+            # Both mode
             # Get CPU results
             cpu_avg, cpu_std, cpu_populate_time = cpu_results[label]
             # Get disk results
@@ -679,58 +726,110 @@ def main():
             results.append(result)
 
     if results:
-        print("\n{:<12} {:<10} {:<15} {:<15} {:<15} {:<18} {:<18}".format(
-            "Config", "Size(GB)", "Populate(s)", "CPU Load(s)", "Disk Load(s)",
-            "Disk Speedup", "CPU Speedup"))
-        print("-"*108)
+        # Adjust header based on mode
+        if args.mode == "cpu":
+            print("\n{:<12} {:<10} {:<15} {:<15} {:<18}".format(
+                "Config", "Size(GB)", "Populate(s)", "CPU Load(s)", "CPU Speedup"))
+            print("-"*75)
+        elif args.mode == "disk":
+            print("\n{:<12} {:<10} {:<15} {:<15} {:<18}".format(
+                "Config", "Size(GB)", "Populate(s)", "Disk Load(s)", "Disk Speedup"))
+            print("-"*75)
+        else:  # both
+            print("\n{:<12} {:<10} {:<15} {:<15} {:<15} {:<18} {:<18}".format(
+                "Config", "Size(GB)", "Populate(s)", "CPU Load(s)", "Disk Load(s)",
+                "Disk Speedup", "CPU Speedup"))
+            print("-"*108)
 
         for r in results:
             # Calculate speedups for each configuration
             disk_speedup = r['populate_time'] / r['disk_avg'] if r['disk_avg'] > 0 else 0
             cpu_speedup = r['populate_time'] / r['cpu_avg'] if r['cpu_avg'] > 0 else 0
 
-            print("{:<12} {:<10.3f} {:<15.2f} {:<15.2f} {:<15.2f} {:<18.2f}x {:<18.2f}x".format(
-                r['label'], r['message_size_gb'],
-                r['populate_time'], r['cpu_avg'], r['disk_avg'],
-                disk_speedup, cpu_speedup))
+            if args.mode == "cpu":
+                print("{:<12} {:<10.3f} {:<15.2f} {:<15.2f} {:<18.2f}x".format(
+                    r['label'], r['message_size_gb'],
+                    r['populate_time'], r['cpu_avg'], cpu_speedup))
+            elif args.mode == "disk":
+                print("{:<12} {:<10.3f} {:<15.2f} {:<15.2f} {:<18.2f}x".format(
+                    r['label'], r['message_size_gb'],
+                    r['populate_time'], r['disk_avg'], disk_speedup))
+            else:  # both
+                print("{:<12} {:<10.3f} {:<15.2f} {:<15.2f} {:<15.2f} {:<18.2f}x {:<18.2f}x".format(
+                    r['label'], r['message_size_gb'],
+                    r['populate_time'], r['cpu_avg'], r['disk_avg'],
+                    disk_speedup, cpu_speedup))
 
-        # Calculate average metrics
-        avg_cpu_time = np.mean([r['cpu_avg'] for r in results])
-        avg_disk_time = np.mean([r['disk_avg'] for r in results])
+        # Calculate average metrics based on mode
         avg_populate_time = np.mean([r['populate_time'] for r in results])
 
-        print(f"\n📊 Average times:")
-        print(f"   Populate (compute): {avg_populate_time:.2f}s")
-        print(f"   CPU load: {avg_cpu_time:.2f}s")
-        print(f"   Disk load: {avg_disk_time:.2f}s")
+        if args.mode == "cpu":
+            avg_cpu_time = np.mean([r['cpu_avg'] for r in results if r['cpu_avg'] > 0])
+            print(f"\n📊 Average times:")
+            print(f"   Populate (compute): {avg_populate_time:.2f}s")
+            print(f"   CPU load: {avg_cpu_time:.2f}s")
 
-        if avg_disk_time > 0 and avg_cpu_time > 0:
-            disk_speedup = avg_populate_time / avg_disk_time
-            cpu_speedup = avg_populate_time / avg_cpu_time
-            cpu_vs_disk = avg_cpu_time / avg_disk_time
+            if avg_cpu_time > 0:
+                cpu_speedup = avg_populate_time / avg_cpu_time
+                print(f"\n📈 Average speedup vs compute (populate):")
+                print(f"   ⚡ CPU loading is {cpu_speedup:.2f}x faster than compute")
 
-            print(f"\n📈 Average speedups vs compute (populate):")
-            print(f"   ⚡ Disk loading is {disk_speedup:.2f}x faster than compute")
-            print(f"   ⚡ CPU loading is {cpu_speedup:.2f}x faster than compute")
+        elif args.mode == "disk":
+            avg_disk_time = np.mean([r['disk_avg'] for r in results if r['disk_avg'] > 0])
+            print(f"\n📊 Average times:")
+            print(f"   Populate (compute): {avg_populate_time:.2f}s")
+            print(f"   Disk load: {avg_disk_time:.2f}s")
 
-            print(f"\n📊 Relative performance:")
-            if cpu_vs_disk > 1:
-                print(f"   💾 Disk is {cpu_vs_disk:.2f}x faster than CPU loading")
-            else:
-                print(f"   🧠 CPU is {1/cpu_vs_disk:.2f}x faster than disk loading")
+            if avg_disk_time > 0:
+                disk_speedup = avg_populate_time / avg_disk_time
+                print(f"\n📈 Average speedup vs compute (populate):")
+                print(f"   ⚡ Disk loading is {disk_speedup:.2f}x faster than compute")
 
-        # Save results
-        output_file = os.path.join(args.output_dir, 'results_optimized.json')
+        else:  # both
+            avg_cpu_time = np.mean([r['cpu_avg'] for r in results if r['cpu_avg'] > 0])
+            avg_disk_time = np.mean([r['disk_avg'] for r in results if r['disk_avg'] > 0])
+
+            print(f"\n📊 Average times:")
+            print(f"   Populate (compute): {avg_populate_time:.2f}s")
+            print(f"   CPU load: {avg_cpu_time:.2f}s")
+            print(f"   Disk load: {avg_disk_time:.2f}s")
+
+            if avg_disk_time > 0 and avg_cpu_time > 0:
+                disk_speedup = avg_populate_time / avg_disk_time
+                cpu_speedup = avg_populate_time / avg_cpu_time
+                cpu_vs_disk = avg_cpu_time / avg_disk_time
+
+                print(f"\n📈 Average speedups vs compute (populate):")
+                print(f"   ⚡ Disk loading is {disk_speedup:.2f}x faster than compute")
+                print(f"   ⚡ CPU loading is {cpu_speedup:.2f}x faster than compute")
+
+                print(f"\n📊 Relative performance:")
+                if cpu_vs_disk > 1:
+                    print(f"   💾 Disk is {cpu_vs_disk:.2f}x faster than CPU loading")
+                else:
+                    print(f"   🧠 CPU is {1/cpu_vs_disk:.2f}x faster than disk loading")
+
+        # Save results with mode-specific filename
+        filename = f'results_optimized_{args.mode}.json' if args.mode != "both" else 'results_optimized.json'
+        output_file = os.path.join(args.output_dir, filename)
         with open(output_file, 'w') as f:
             json.dump(results, f, indent=2)
 
-        # Plot results
-        plot_results(results, args.output_dir)
+        # Plot results (only for 'both' mode - modify plot function if needed for single modes)
+        if args.mode == "both":
+            plot_results(results, args.output_dir)
 
         print(f"\n✅ Results saved to: {output_file}")
 
     print("\n🎉 Optimized benchmark complete!")
-    print("📊 Model weights were loaded TWICE (once for CPU, once for disk benchmarks)")
+
+    # Update final message based on mode
+    if args.mode == "both":
+        print("📊 Model weights were loaded TWICE (once for CPU, once for disk benchmarks)")
+    elif args.mode == "cpu":
+        print("📊 Model weights were loaded ONCE for CPU benchmarking")
+    elif args.mode == "disk":
+        print("📊 Model weights were loaded ONCE for disk benchmarking")
 
 if __name__ == "__main__":
     main()
